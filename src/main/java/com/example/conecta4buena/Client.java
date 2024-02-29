@@ -16,7 +16,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Random;
 
 public class Client extends Application {
     private static final int GRID_SIZE = 5;
@@ -232,6 +231,8 @@ public class Client extends Application {
             buttons[row][col].setText("B");
         }
     }
+
+
 
     // Clase interna para manejar la comunicación UDP
     public static class UDPClient {
