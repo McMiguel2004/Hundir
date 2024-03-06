@@ -50,34 +50,44 @@ public class Server {
             DataInputStream inputStream = new DataInputStream(clientSocketTCP.getInputStream());
             DataOutputStream outputStream = new DataOutputStream(clientSocketTCP.getOutputStream());
 
-            // Coloca barcos aleatorios en el tablero y notifica al cliente
-            colocarBarcosAleatorios(tablero);
-            enviarMensaje(outputStream, "Barcos colocados. ¡Que comience el juego!");
-
             while (gameActive) {
-                // Lee las coordenadas del disparo desde el cliente
-                int row = inputStream.readInt();
-                int col = inputStream.readInt();
+                // Lee las coordenadas del disparo o el mensaje desde el cliente
+                String clientMessage = inputStream.readUTF();
 
-                // Procesa el disparo y envía el resultado al cliente
-                if (esDisparoValido(row, col)) {
-                    if (tablero[row][col] == 1) {
-                        enviarMensaje(outputStream, "IMPACTO:" + row + "," + col);
-                    } else {
-                        enviarMensaje(outputStream, "AGUA:" + row + "," + col);
-                    }
-                    checkGameOver(outputStream);
-                } else if ("RESET".equals(row + "," + col)) {
+                if ("RESET".equals(clientMessage)) {
                     // Reinicia el juego si el cliente solicita un reinicio
+                    reiniciarJuego();
                     colocarBarcosAleatorios(tablero);
                     enviarMensaje(outputStream, "RESET:Barcos reubicados. ¡Que comience el juego!");
+                } else if ("ADD_SHIPS".equals(clientMessage)) {
+                    // Coloca barcos aleatorios si el cliente solicita agregar barcos
+                    reiniciarJuego(); // Asegúrate de reiniciar antes de colocar los nuevos barcos
+                    colocarBarcosAleatorios(tablero);
+                    enviarMensaje(outputStream, "RESET:Barcos colocados. ¡Que comience el juego!");
                 } else {
-                    // Notifica al cliente si el disparo es inválido
-                    enviarMensaje(outputStream, "INVALIDO:" + row + "," + col);
-                }
+                    // Convierte el mensaje del cliente en coordenadas de disparo
+                    String[] coordinates = clientMessage.split(",");
+                    if (coordinates.length == 2) {
+                        int row = Integer.parseInt(coordinates[0]);
+                        int col = Integer.parseInt(coordinates[1]);
 
-                // Imprime el tablero del juego en el servidor
-                printBoard(tablero);
+                        // Procesa el disparo y envía el resultado al cliente
+                        if (esDisparoValido(row, col)) {
+                            if (tablero[row][col] == 1) {
+                                enviarMensaje(outputStream, "IMPACTO:" + row + "," + col);
+                            } else {
+                                enviarMensaje(outputStream, "AGUA:" + row + "," + col);
+                            }
+                            checkGameOver(outputStream);
+                        } else {
+                            // Notifica al cliente si el disparo es inválido
+                            enviarMensaje(outputStream, "INVALIDO:" + row + "," + col);
+                        }
+                    }
+
+                    // Imprime el tablero del juego en el servidor
+                    printBoard(tablero);
+                }
             }
 
             // Cierra la conexión TCP
@@ -87,6 +97,8 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+
 
     private static void colocarBarcosAleatorios(int[][] board) {
         Random random = new Random();
@@ -150,4 +162,12 @@ public class Server {
         }
         return true;
     }
+
+    private static void reiniciarJuego() {
+        // Reinicia el estado del juego, incluido el tablero
+        tablero = new int[GRID_SIZE][GRID_SIZE];
+        gameActive = true;
+    }
+
+
 }

@@ -56,7 +56,11 @@ public class Client extends Application {
         Button resetButton = new Button("Reiniciar Juego");
         resetButton.setOnAction(e -> handleResetButton());
 
-        VBox root = new VBox(grid, messageLabel, resetButton);
+        Button addShipsButton = new Button("Colocar Barcos");
+        addShipsButton.setOnAction(e -> handleAddShipsButton());
+
+        VBox root = new VBox(grid, messageLabel, resetButton, addShipsButton);
+
         Scene scene = new Scene(root, 250, 400);
         primaryStage.setScene(scene);
 
@@ -91,13 +95,14 @@ public class Client extends Application {
     private void handleButtonClick(int row, int col) {
         if (gameActive) {
             try {
-                outputStream.writeInt(row);
-                outputStream.writeInt(col);
+                outputStream.writeUTF(row + "," + col);
+                outputStream.flush(); // Asegúrate de vaciar el búfer para enviar los datos de inmediato
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
 
     private void receiveMessages() {
         try {
@@ -255,4 +260,15 @@ public class Client extends Application {
             }
         }
     }
+
+    private void handleAddShipsButton() {
+        try {
+            // Envía un mensaje al servidor indicando que el cliente desea colocar barcos
+            outputStream.writeUTF("ADD_SHIPS");
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
