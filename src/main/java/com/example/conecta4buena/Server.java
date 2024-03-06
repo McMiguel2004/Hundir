@@ -1,7 +1,10 @@
 package com.example.conecta4buena;
+
 import java.io.*;
 import java.net.*;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class Server {
     private static final int GRID_SIZE = 5;
@@ -50,6 +53,9 @@ public class Server {
             DataInputStream inputStream = new DataInputStream(clientSocketTCP.getInputStream());
             DataOutputStream outputStream = new DataOutputStream(clientSocketTCP.getOutputStream());
 
+            boolean barcosColocados = false;
+            Set<String> disparosRealizados = new HashSet<>();
+
             while (gameActive) {
                 // Lee las coordenadas del disparo o el mensaje desde el cliente
                 String clientMessage = inputStream.readUTF();
@@ -58,18 +64,36 @@ public class Server {
                     // Reinicia el juego si el cliente solicita un reinicio
                     reiniciarJuego();
                     colocarBarcosAleatorios(tablero);
+                    barcosColocados = true;  // Marca que los barcos están colocados
+                    disparosRealizados.clear();  // Limpia los disparos realizados
                     enviarMensaje(outputStream, "RESET:Barcos reubicados. ¡Que comience el juego!");
                 } else if ("ADD_SHIPS".equals(clientMessage)) {
                     // Coloca barcos aleatorios si el cliente solicita agregar barcos
                     reiniciarJuego(); // Asegúrate de reiniciar antes de colocar los nuevos barcos
                     colocarBarcosAleatorios(tablero);
+                    barcosColocados = true;  // Marca que los barcos están colocados
+                    disparosRealizados.clear();  // Limpia los disparos realizados
                     enviarMensaje(outputStream, "RESET:Barcos colocados. ¡Que comience el juego!");
+                } else if (!barcosColocados) {
+                    // No permite que el juego comience hasta que los barcos estén colocados
+                    enviarMensaje(outputStream, "WAIT:Coloca los barcos antes de comenzar el juego.");
                 } else {
                     // Convierte el mensaje del cliente en coordenadas de disparo
                     String[] coordinates = clientMessage.split(",");
                     if (coordinates.length == 2) {
                         int row = Integer.parseInt(coordinates[0]);
                         int col = Integer.parseInt(coordinates[1]);
+
+                        // Verifica si ya se realizó un disparo en estas coordenadas
+                        String coordenadasDisparo = row + "," + col;
+                        if (disparosRealizados.contains(coordenadasDisparo)) {
+                            enviarMensaje(outputStream, "INVALIDO:" + row + "," + col +
+                                    ":Ya has disparado en estas coordenadas.");
+                            continue;  // Salta la iteración para evitar procesar el disparo duplicado
+                        }
+
+                        // Registra el disparo
+                        disparosRealizados.add(coordenadasDisparo);
 
                         // Procesa el disparo y envía el resultado al cliente
                         if (esDisparoValido(row, col)) {

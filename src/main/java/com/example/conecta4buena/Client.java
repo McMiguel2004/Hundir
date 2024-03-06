@@ -2,10 +2,12 @@ package com.example.conecta4buena;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -59,10 +61,26 @@ public class Client extends Application {
         Button addShipsButton = new Button("Colocar Barcos");
         addShipsButton.setOnAction(e -> handleAddShipsButton());
 
-        VBox root = new VBox(grid, messageLabel, resetButton, addShipsButton);
+        // Utiliza HBox para centrar los botones horizontalmente con espacio
+        HBox buttonsContainer = new HBox(10, resetButton, addShipsButton); // 10 es el espaciado entre los botones
+        buttonsContainer.setAlignment(Pos.CENTER);
+
+        Label instructionsLabel = new Label("Para jugar, primero hay que colocar los barcos así tendrás que hacerlo cada vez que quieras jugar de nuevo");
+        instructionsLabel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        instructionsLabel.setWrapText(true);
+
+        // Agregar márgenes a la izquierda y derecha (puedes ajustar los valores según sea necesario)
+        instructionsLabel.setPadding(new javafx.geometry.Insets(0, 10, 0, 10));
+
+
+        VBox root = new VBox(10, grid, messageLabel, buttonsContainer, instructionsLabel); // 10 es el espaciado entre los elementos
+        root.setAlignment(Pos.CENTER);
 
         Scene scene = new Scene(root, 250, 400);
         primaryStage.setScene(scene);
+
+
+
 
         try {
             // Establece la conexión TCP con el servidor
