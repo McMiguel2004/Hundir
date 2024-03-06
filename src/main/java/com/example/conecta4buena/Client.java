@@ -152,6 +152,9 @@ public class Client extends Application {
         buttons[row][col].setText("X");
         messageLabel.setText("¡Impacto! Barco alcanzado en (" + row + ", " + col + ")");
 
+        // Imprimir el mensaje en la terminal del cliente
+        System.out.println("¡Impacto! Barco alcanzado en (" + row + ", " + col + ")");
+
         barcosRestantes--;
 
         if (barcosRestantes == 0) {
@@ -159,9 +162,12 @@ public class Client extends Application {
                 gameActive = false;
                 messageLabel.setText("Toda la flota ha sido hundida. ¡Enhorabuena!");
                 disableButtons();
+                // Imprimir mensaje de victoria en la terminal del cliente
+                System.out.println("¡Enhorabuena! Toda la flota ha sido hundida.");
             });
         }
     }
+
 
     private void handleWater(String coordinates) {
         String[] parts = coordinates.split(",");
@@ -170,6 +176,9 @@ public class Client extends Application {
 
         buttons[row][col].setText("O");
         messageLabel.setText("Agua. Disparo en (" + row + ", " + col + ")");
+
+        // Imprimir el mensaje en la terminal del cliente
+        System.out.println("Agua. Disparo en (" + row + ", " + col + ")");
     }
 
     private void handleInvalid(String coordinates) {
@@ -181,6 +190,8 @@ public class Client extends Application {
             gameActive = false;
             messageLabel.setText(message);
             disableButtons();
+            // Imprimir mensaje de victoria en la terminal del cliente
+            System.out.println(message);
         });
     }
 
@@ -190,7 +201,6 @@ public class Client extends Application {
             barcosRestantes = 3;
             messageLabel.setText("Bienvenido. Realiza tu primer disparo.");
             String barcosUbicados = resetButtons();
-            colocarBarcosAleatorios(barcosUbicados);
         });
     }
 
@@ -221,17 +231,6 @@ public class Client extends Application {
 
         return barcosUbicados.toString();
     }
-
-    private void colocarBarcosAleatorios(String barcosUbicados) {
-        String[] ubicaciones = barcosUbicados.split(":");
-        for (String ubicacion : ubicaciones) {
-            String[] parts = ubicacion.split(",");
-            int row = Integer.parseInt(parts[0]);
-            int col = Integer.parseInt(parts[1]);
-            buttons[row][col].setText("B");
-        }
-    }
-
 
 
     // Clase interna para manejar la comunicación UDP
